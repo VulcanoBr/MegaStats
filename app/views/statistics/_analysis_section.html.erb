@@ -1,0 +1,79 @@
+
+<section id="<%= id %>" class="mb-10 scroll-mt-6">
+  <div class="mb-4">
+    <h2 class="text-xl font-bold text-white"><%= title %></h2>
+    <p class="mt-1 text-sm text-slate-400"><%= description %></p>
+  </div>
+
+  <% if analysis.present? %>
+    <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <%= render "metric_cards", metrics: analysis[:metrics] || {} %>
+    </div>
+
+    <% (analysis[:rankings] || {}).each do |ranking_name, items| %>
+      <div class="mb-5 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+        <div class="border-b border-slate-800 px-5 py-4">
+          <h3 class="font-semibold text-white">
+            <%= ranking_name.to_s.humanize %>
+          </h3>
+        </div>
+
+        <% if items.present? %>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[540px] text-left text-sm">
+              <thead class="bg-slate-950/60 text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th class="px-5 py-3">Dezena / combinação</th>
+                  <th class="px-5 py-3 text-right">Ocorrências</th>
+                  <th class="px-5 py-3 text-right">Atraso atual</th>
+                  <th class="px-5 py-3 text-right">Maior atraso histórico</th>
+                  <th class="px-5 py-3 text-right">Percentual</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-slate-800">
+                <% items.first(15).each do |item| %>
+                  <tr class="transition hover:bg-slate-800/50">
+                    <td class="px-5 py-3 font-semibold text-white">
+                      <% if item[:number].present? %>
+                        <%= format("%02d", item[:number]) %>
+                      <% elsif item[:numbers].present? %>
+                        <%= item[:numbers].map { |number| format("%02d", number) }.join(" - ") %>
+                      <% else %>
+                        —
+                      <% end %>
+                    </td>
+
+                    <td class="px-5 py-3 text-right tabular-nums text-slate-300">
+                      <%= item[:occurrence_count].nil? ? "—" : number_with_delimiter(item[:occurrence_count]) %>
+                    </td>
+
+                    <td class="px-5 py-3 text-right tabular-nums text-slate-300">
+                      <%= item[:current_delay].nil? ? "—" : item[:current_delay] %>
+                    </td>
+
+                    <td class="px-5 py-3 text-right tabular-nums text-slate-300">
+                      <%= item[:maximum_historical_delay].nil? ? "—" : item[:maximum_historical_delay] %>
+                    </td>
+
+                    <td class="px-5 py-3 text-right tabular-nums text-slate-300">
+                      <%= item[:percentage].nil? ? "—" : number_to_percentage(item[:percentage], precision: 2) %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="p-5 text-sm text-slate-400">
+            Não existem registros para este ranking.
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="rounded-xl border border-slate-800 bg-slate-900 p-5 text-sm text-slate-400">
+      Não existem resultados disponíveis para esta análise.
+    </p>
+  <% end %>
+</section>

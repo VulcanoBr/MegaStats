@@ -1,0 +1,61 @@
+<div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+  <header>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-white">
+          Histórico de importações
+        </h1>
+
+        <p class="mt-2 text-sm text-slate-400">
+          Consulte os arquivos processados e os resultados de cada execução.
+        </p>
+      </div>
+
+      <%= link_to new_import_batch_path,
+                  class: "inline-flex items-center gap-2 rounded-xl
+                          bg-lime-400 px-5 py-3 text-sm font-bold
+                          text-slate-950 transition hover:bg-lime-300" do %>
+        <span>⇧</span>
+        Nova importação
+      <% end %>
+    </div>
+  </header>
+
+  <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900">
+    <table class="min-w-full divide-y divide-slate-800 text-left text-sm">
+      <thead class="text-slate-400">
+        <tr>
+          <th class="px-4 py-3">Data</th>
+          <th class="px-4 py-3">Arquivo</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Inseridos</th>
+          <th class="px-4 py-3">Atualizados</th>
+          <th class="px-4 py-3">Erros</th>
+          <th class="px-4 py-3">Detalhes</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800 text-white">
+        <% @import_batches.each do |batch| %>
+          <tr>
+            <td class="whitespace-nowrap px-4 py-3">
+              <%= l(batch.created_at, format: :short) %>
+            </td>
+
+            <td class="px-4 py-3"><%= batch.file_name %></td>
+            <td class="px-4 py-3"><%= batch.status %></td>
+            <td class="px-4 py-3"><%= batch.inserted_rows %></td>
+            <td class="px-4 py-3"><%= batch.updated_rows %></td>
+            <td class="px-4 py-3"><%= batch.error_rows %></td>
+
+            <td class="px-4 py-3">
+              <%= link_to "Consultar",
+                          import_batch_path(batch),
+                          class: "font-medium text-lime-400 hover:text-lime-300" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+
+<section id="<%= id %>" class="mb-10 scroll-mt-6">
+  <div class="mb-4">
+    <h2 class="text-xl font-bold text-white"><%= title %></h2>
+    <p class="mt-1 text-sm text-slate-400"><%= description %></p>
+  </div>
+
+  <% if analysis.present? %>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <%= render "metric_cards", metrics: analysis[:metrics] || {} %>
+    </div>
+  <% else %>
+    <p class="rounded-xl border border-slate-800 bg-slate-900 p-5 text-sm text-slate-400">
+      Não existem resultados disponíveis para esta análise.
+    </p>
+  <% end %>
+</section>

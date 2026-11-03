@@ -1,0 +1,183 @@
+
+<section class="space-y-6">
+
+  <div>
+    <h2 class="text-xl font-semibold text-white">
+      Análise personalizada
+    </h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Escolha os limites de arrecadação para analisar os concursos
+      que correspondem ao intervalo informado.
+    </p>
+  </div>
+
+  <section class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+
+    <%= form_with url: revenue_analyses_path,
+                  method: :get,
+                  class: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" do |form| %>
+
+      <%= form.hidden_field :tab, value: "custom" %>
+
+      <div>
+        <%= form.label :minimum, "Arrecadação mínima (R$)",
+                       class: "mb-2 block text-sm font-medium text-slate-300" %>
+
+        <%= form.number_field :minimum,
+                              value: @minimum,
+                              min: 0,
+                              step: "0.01",
+                              placeholder: "Ex.: 10000000.00",
+                              class: "w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white placeholder:text-slate-600 focus:border-lime-400 focus:outline-none focus:ring-1 focus:ring-lime-400" %>
+      </div>
+
+      <div>
+        <%= form.label :maximum, "Arrecadação máxima (R$)",
+                       class: "mb-2 block text-sm font-medium text-slate-300" %>
+
+        <%= form.number_field :maximum,
+                              value: @maximum,
+                              min: 0,
+                              step: "0.01",
+                              placeholder: "Ex.: 50000000.00",
+                              class: "w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white placeholder:text-slate-600 focus:border-lime-400 focus:outline-none focus:ring-1 focus:ring-lime-400" %>
+      </div>
+
+      <div class="flex items-end">
+        <%= form.submit "Analisar",
+                        class: "w-full cursor-pointer rounded-xl bg-lime-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-lime-300" %>
+      </div>
+
+    <% end %>
+
+  </section>
+
+  <% if @search_performed && flash.now[:alert].blank? %>
+
+    <% if @total_draws.positive? %>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <p class="text-sm text-slate-400">Concursos encontrados</p>
+
+          <p class="mt-2 text-3xl font-bold text-white tabular-nums">
+            <%= number_with_delimiter(@total_draws, delimiter: ".") %>
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <p class="text-sm text-slate-400">Dezenas analisadas</p>
+
+          <p class="mt-2 text-3xl font-bold text-lime-300 tabular-nums">
+            <%= @frequencies.size %>
+          </p>
+        </div>
+
+      </div>
+
+      <section class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+
+        <div class="border-b border-slate-800 p-5">
+          <h3 class="text-lg font-semibold text-white">
+            Frequência das dezenas
+          </h3>
+
+          <p class="mt-1 text-sm text-slate-400">
+            Quantidade e percentual de aparições nos concursos encontrados.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+
+            <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-5 py-4">Dezena</th>
+                <th class="px-5 py-4 text-right">Ocorrências</th>
+                <th class="px-5 py-4 text-right">Percentual</th>
+                <th class="px-5 py-4">Frequência visual</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-800 text-white">
+
+              <% @frequencies.each do |item| %>
+                <tr class="transition hover:bg-slate-800/50">
+
+                  <td class="px-5 py-3">
+                    <span class="inline-flex size-9 items-center justify-center rounded-full bg-lime-400 font-bold text-slate-950">
+                      <%= "%02d" % item[:number] %>
+                    </span>
+                  </td>
+
+                  <td class="px-5 py-3 text-right font-semibold tabular-nums">
+                    <%= number_with_delimiter(item[:count], delimiter: ".") %>
+                  </td>
+
+                  <td class="px-5 py-3 text-right font-semibold text-lime-300 tabular-nums">
+                    <%= number_to_percentage(item[:percentage], precision: 2) %>
+                  </td>
+
+                  <td class="min-w-40 px-5 py-3">
+                    <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        class="h-full rounded-full bg-lime-400"
+                        style="width: <%= [[item[:percentage].to_f, 0].max, 100].min %>%">
+                      </div>
+                    </div>
+                  </td>
+
+                </tr>
+              <% end %>
+
+            </tbody>
+          </table>
+        </div>
+
+        <div class="border-t border-slate-800 px-5 py-3">
+          <p class="text-xs text-slate-500">
+            O percentual representa a proporção de concursos do intervalo
+            em que cada dezena apareceu.
+          </p>
+        </div>
+
+      </section>
+
+    <% else %>
+
+      <div class="rounded-2xl border border-amber-800/60 bg-amber-950/20 p-8 text-center">
+
+        <h3 class="text-lg font-semibold text-white">
+          Nenhum concurso encontrado
+        </h3>
+
+        <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-400">
+          Não foram encontrados concursos com arrecadação dentro dos limites
+          informados. Verifique os valores e tente uma nova consulta.
+        </p>
+
+      </div>
+
+    <% end %>
+
+  <% elsif !@search_performed %>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center">
+
+      <h3 class="text-lg font-semibold text-white">
+        Aguardando parâmetros
+      </h3>
+
+      <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-400">
+        Informe a arrecadação mínima e/ou máxima e clique em
+        <strong class="text-lime-300">Analisar</strong>
+        para consultar as frequências.
+      </p>
+
+    </div>
+
+  <% end %>
+
+</section>

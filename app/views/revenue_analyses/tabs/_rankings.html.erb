@@ -1,0 +1,195 @@
+
+<section class="space-y-8">
+
+  <div>
+    <h2 class="text-xl font-semibold text-white">
+      Rankings por faixa de arrecadação
+    </h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      As classificações consideram o percentual de frequência,
+      permitindo comparar faixas com quantidades diferentes de concursos.
+    </p>
+  </div>
+
+  <% @range_comparison[:ranges].each do |range| %>
+
+    <section class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+
+      <div>
+        <h3 class="text-lg font-semibold text-white">
+          <%= range[:name] %>
+        </h3>
+
+        <p class="mt-1 text-xs text-slate-500">
+          <%= number_with_delimiter(range[:total_draws], delimiter: ".") %>
+          concursos analisados
+        </p>
+      </div>
+
+      <% if range[:total_draws].zero? %>
+
+        <p class="text-sm text-slate-500">
+          Não existem concursos nesta faixa para calcular os rankings.
+        </p>
+
+      <% else %>
+
+        <div class="grid gap-5 lg:grid-cols-2">
+
+          <% [
+            ["Dezenas mais frequentes", range[:rankings][:most_frequent]],
+            ["Dezenas menos frequentes", range[:rankings][:least_frequent]]
+          ].each do |title, items| %>
+
+            <div>
+              <h4 class="mb-3 text-sm font-semibold text-slate-300">
+                <%= title %>
+              </h4>
+
+              <div class="space-y-2">
+
+                <% items.each_with_index do |item, index| %>
+                  <div class="flex items-center justify-between rounded-lg bg-slate-950 px-3 py-2">
+
+                    <div class="flex items-center gap-3">
+                      <span class="text-xs text-slate-500">
+                        <%= index + 1 %>.
+                      </span>
+
+                      <span class="flex size-8 items-center justify-center rounded-full bg-lime-400 font-bold text-slate-950">
+                        <%= "%02d" % item[:number] %>
+                      </span>
+                    </div>
+
+                    <div class="text-right">
+                      <p class="font-semibold text-white tabular-nums">
+                        <%= number_to_percentage(item[:percentage], precision: 2) %>
+                      </p>
+
+                      <p class="text-xs text-slate-500">
+                        <%= item[:count] %> ocorrências
+                      </p>
+                    </div>
+
+                  </div>
+                <% end %>
+
+              </div>
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% end %>
+
+    </section>
+
+  <% end %>
+
+  <%# Variação entre primeira e última faixa %>
+  <section class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+
+    <div>
+      <h3 class="text-lg font-semibold text-white">
+        Variação entre as faixas extremas
+      </h3>
+
+      <p class="mt-1 text-sm text-slate-400">
+        Diferença em pontos percentuais entre a Faixa 1 e a Faixa 6.
+      </p>
+    </div>
+
+    <% if @range_comparison[:variations].empty? %>
+
+      <p class="text-sm text-slate-500">
+        Não há dados suficientes nas duas faixas extremas para calcular
+        a variação.
+      </p>
+
+    <% else %>
+
+      <div class="grid gap-5 lg:grid-cols-2">
+
+        <% [
+          ["Maiores aumentos", @range_comparison[:variation_rankings][:largest_increase]],
+          ["Maiores reduções", @range_comparison[:variation_rankings][:largest_decrease]]
+        ].each do |title, items| %>
+
+          <div>
+            <h4 class="mb-3 text-sm font-semibold text-slate-300">
+              <%= title %>
+            </h4>
+
+            <div class="space-y-2">
+
+              <% items.each do |item| %>
+                <div class="flex items-center justify-between rounded-lg bg-slate-950 px-3 py-2">
+
+                  <span class="flex size-8 items-center justify-center rounded-full bg-slate-800 font-bold text-white">
+                    <%= "%02d" % item[:number] %>
+                  </span>
+
+                  <span class="font-semibold tabular-nums <%= item[:variation].positive? ? 'text-lime-300' : item[:variation].negative? ? 'text-rose-300' : 'text-slate-400' %>">
+                    <%= item[:variation] > 0 ? "+" : "" %><%= number_with_precision(item[:variation], precision: 2) %> p.p.
+                  </span>
+
+                </div>
+              <% end %>
+
+            </div>
+          </div>
+
+        <% end %>
+
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+
+        <table class="min-w-full text-sm">
+
+          <thead class="bg-slate-950 text-slate-400">
+            <tr>
+              <th class="px-4 py-3 text-left">Dezena</th>
+              <th class="px-4 py-3 text-right">Faixa 1</th>
+              <th class="px-4 py-3 text-right">Faixa 6</th>
+              <th class="px-4 py-3 text-right">Variação</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-800 text-white">
+
+            <% @range_comparison[:variations].each do |item| %>
+              <tr>
+                <td class="px-4 py-3 font-semibold text-lime-300">
+                  <%= "%02d" % item[:number] %>
+                </td>
+
+                <td class="px-4 py-3 text-right tabular-nums">
+                  <%= number_to_percentage(item[:first_range_percentage], precision: 2) %>
+                </td>
+
+                <td class="px-4 py-3 text-right tabular-nums">
+                  <%= number_to_percentage(item[:last_range_percentage], precision: 2) %>
+                </td>
+
+                <td class="px-4 py-3 text-right font-semibold tabular-nums">
+                  <span class="<%= item[:variation].positive? ? 'text-lime-300' : item[:variation].negative? ? 'text-rose-300' : 'text-slate-400' %>">
+                    <%= item[:variation] > 0 ? "+" : "" %><%= number_with_precision(item[:variation], precision: 2) %> p.p.
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    <% end %>
+
+  </section>
+
+</section>

@@ -1,0 +1,98 @@
+
+<section class="space-y-6">
+
+  <div>
+    <h2 class="text-xl font-semibold text-white">
+      Visão geral
+    </h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Distribuição dos concursos nas seis faixas de arrecadação.
+    </p>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+    <% @range_comparison[:ranges].each do |range| %>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+
+        <p class="text-sm font-medium text-slate-400">
+          <%= range[:name] %>
+        </p>
+
+        <p class="mt-3 text-3xl font-bold text-white tabular-nums">
+          <%= number_with_delimiter(range[:total_draws], delimiter: ".") %>
+        </p>
+
+        <p class="mt-1 text-xs text-slate-500">
+          concursos analisados
+        </p>
+
+        <% if range[:total_draws].positive? %>
+          <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
+            <div
+              class="h-full rounded-full bg-lime-400"
+              style="width: <%= @range_comparison[:total_draws_with_revenue].positive? ? (range[:total_draws].to_f / @range_comparison[:total_draws_with_revenue] * 100).round(2) : 0 %>%">
+            </div>
+          </div>
+
+          <p class="mt-2 text-xs text-slate-500">
+            <%= number_to_percentage(
+                  range[:total_draws].to_f /
+                  @range_comparison[:total_draws_with_revenue] * 100,
+                  precision: 2
+                ) %>
+            do total com arrecadação
+          </p>
+        <% else %>
+          <p class="mt-4 text-xs text-slate-500">
+            Nenhum concurso nesta faixa.
+          </p>
+        <% end %>
+
+      </div>
+    <% end %>
+
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+      <p class="text-sm text-slate-400">
+        Total de concursos classificados
+      </p>
+
+      <p class="mt-2 text-3xl font-bold text-lime-300 tabular-nums">
+        <%= number_with_delimiter(
+              @range_comparison[:total_draws_with_revenue],
+              delimiter: "."
+            ) %>
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+      <p class="text-sm text-slate-400">
+        Dezenas analisadas
+      </p>
+
+      <p class="mt-2 text-3xl font-bold text-white">
+        <%= @range_comparison[:total_numbers] %>
+      </p>
+    </div>
+
+  </div>
+
+  <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+    <h3 class="font-semibold text-white">
+      O que você pode analisar?
+    </h3>
+
+    <ul class="mt-3 space-y-2 text-sm text-slate-400">
+      <li>• Frequência de cada dezena nas seis faixas.</li>
+      <li>• Dezenas mais e menos frequentes em cada faixa.</li>
+      <li>• Diferenças entre a faixa de menor e a de maior arrecadação.</li>
+      <li>• Frequência em um intervalo personalizado de arrecadação.</li>
+    </ul>
+  </div>
+
+</section>

@@ -1,0 +1,117 @@
+
+<% metrics = @analysis[:metrics] %>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Concursos com sequências",
+        value: metrics[:draws_with_sequences],
+        description: number_to_percentage(metrics[:draws_with_sequences_percentage], precision: 2) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Concursos sem sequências",
+        value: metrics[:draws_without_sequences] %>
+
+  <%= render "statistics/metric_cards",
+        title: "Total de sequências",
+        value: metrics[:total_sequences] %>
+
+  <%= render "statistics/metric_cards",
+        title: "Pares consecutivos",
+        value: metrics[:total_consecutive_pairs] %>
+
+  <%= render "statistics/metric_cards",
+        title: "Média de sequências por concurso",
+        value: number_with_precision(metrics[:average_sequences_per_draw], precision: 3) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Média dos intervalos",
+        value: number_with_precision(metrics[:average_interval], precision: 2) %>
+
+</section>
+
+<article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+  <h2 class="text-lg font-semibold text-white">Distribuição por tamanho das sequências</h2>
+
+  <div class="mt-6 space-y-5">
+    <% max_occurrences = [@analysis[:sequence_size_distribution].map { |item| item[:occurrences] }.max.to_i, 1].max %>
+
+    <% @analysis[:sequence_size_distribution].each do |item| %>
+      <div>
+        <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+          <span class="font-semibold text-white">
+            <%= item[:size] %> dezenas consecutivas
+          </span>
+
+          <span class="text-slate-400">
+            <%= item[:occurrences] %> ocorrências ·
+            <%= number_to_percentage(item[:percentage], precision: 2) %>
+          </span>
+        </div>
+
+        <div class="h-3 overflow-hidden rounded-full bg-slate-800">
+          <div class="h-full rounded-full bg-lime-400"
+               style="width: <%= item[:occurrences].fdiv(max_occurrences) * 100 %>%"></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</article>
+
+<section class="grid gap-4 sm:grid-cols-3">
+  <%= render "statistics/metric_cards",
+        title: "Menor intervalo",
+        value: metrics[:minimum_interval] || "—" %>
+
+  <%= render "statistics/metric_cards",
+        title: "Mediana dos intervalos",
+        value: metrics[:median_interval] || "—" %>
+
+  <%= render "statistics/metric_cards",
+        title: "Maior intervalo",
+        value: metrics[:maximum_interval] || "—" %>
+</section>
+
+<article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+  <h2 class="text-lg font-semibold text-white">Intervalos mais frequentes</h2>
+
+  <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+    <% @analysis[:rankings][:most_frequent_intervals].first(15).each do |item| %>
+      <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <p class="text-sm text-slate-400">Intervalo</p>
+        <p class="mt-1 text-2xl font-bold text-white"><%= item[:interval] %></p>
+        <p class="mt-2 text-xs text-slate-500">
+          <%= item[:occurrences] %> ocorrências
+        </p>
+      </div>
+    <% end %>
+  </div>
+</article>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Concursos com mais sequências</h2>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Concurso</th>
+          <th class="px-5 py-3 text-right">Sequências</th>
+          <th class="px-5 py-3 text-right">Pares consecutivos</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% @analysis[:rankings][:contests_with_most_sequences].first(10).each do |item| %>
+          <tr>
+            <td class="px-5 py-3 font-semibold text-white">#<%= item[:contest_number] %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:sequence_count] %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:consecutive_pairs] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>

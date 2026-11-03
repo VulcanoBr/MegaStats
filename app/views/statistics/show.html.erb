@@ -1,0 +1,49 @@
+
+
+<div class="mx-auto max-w-full space-y-6">
+
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-widest text-lime-400">
+        MegaStats / Análises estatísticas
+      </p>
+
+      <h1 class="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <%= @page_title %>
+      </h1>
+
+      <p class="mt-2 max-w-2xl text-sm text-slate-400">
+        <%= @analysis_description %>
+      </p>
+    </div>
+
+    <% if @selected_analysis != "overview" %>
+      <%= button_to run_statistics_path,
+            method: :post,
+            params: { analysis: @selected_analysis },
+            class: "inline-flex items-center justify-center gap-2 rounded-xl bg-lime-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-lime-300" do %>
+        <span>↻</span>
+        Atualizar análise
+      <% end %>
+    <% end %>
+  </header>
+
+  <main class="min-w-0 space-y-6">
+
+    <% if @selected_analysis == "overview" %>
+      <%= render partial: "statistics/overview" %>
+    <% else %>
+      <%= render partial: "statistics/analyses/#{@selected_analysis}" %>
+    <% end %>
+
+    <div class="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+      <p class="text-sm leading-relaxed text-amber-200">
+        <strong>Nota estatística:</strong>
+        estas análises descrevem exclusivamente os resultados históricos.
+        Frequências, atrasos e recorrências não alteram a probabilidade
+        matemática de uma dezena ou combinação ser sorteada em um próximo concurso.
+      </p>
+    </div>
+
+  </main>
+</div>

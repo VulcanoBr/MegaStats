@@ -1,0 +1,171 @@
+
+<% metrics = @analysis[:metrics] %>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Atraso atual médio",
+        value: number_with_precision(metrics[:average_current_delay], precision: 2),
+        description: "Concursos desde a última aparição." %>
+
+  <%= render "statistics/metric_cards",
+        title: "Maior atraso atual",
+        value: metrics[:maximum_current_delay] || "—" %>
+
+  <%= render "statistics/metric_cards",
+        title: "Atraso histórico médio",
+        value: number_with_precision(metrics[:average_historical_delay], precision: 2) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Maior atraso histórico",
+        value: metrics[:maximum_historical_delay] || "—" %>
+      
+  <%= render "statistics/metric_cards",
+      title: "Intervalo médio entre aparições",
+      value: metrics[:average_interval_between_appearances] ?
+        "#{number_with_precision(metrics[:average_interval_between_appearances], precision: 2)} concursos" : "—",
+      description: "Distância média entre concursos com aparição da dezena." %>
+
+  <%= render "statistics/metric_cards",
+        title: "Dezenas nunca sorteadas",
+        value: metrics[:numbers_never_drawn] %>
+
+  <%= render "statistics/metric_cards",
+        title: "Dezenas sorteadas uma vez",
+        value: metrics[:numbers_drawn_once] %>
+
+</section>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Dezenas com maior atraso atual</h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Quantidade de concursos desde a última aparição.
+    </p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Dezena</th>
+          <th class="px-5 py-3 text-right">Aparições</th>
+          <th class="px-5 py-3 text-right">Atraso atual</th>
+          <th class="px-5 py-3 text-right">Intervalo médio</th>
+          <th class="px-5 py-3 text-right">Maior atraso histórico</th>
+          <th class="px-5 py-3 text-right">Atraso médio histórico</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% @analysis[:data].each do |item| %>
+          <tr>
+            <td class="px-5 py-3 font-bold text-white">
+              <%= "%02d" % item[:number] %>
+            </td>
+
+            <td class="px-5 py-3 text-right text-slate-300">
+              <%= item[:occurrence_count] %>
+            </td>
+
+            <td class="px-5 py-3 text-right text-slate-300">
+              <%= item[:current_delay] || "—" %>
+            </td>
+
+            <td class="px-5 py-3 text-right font-semibold text-lime-300">
+              <% if item[:average_interval_between_appearances] %>
+                <%= number_with_precision(
+                      item[:average_interval_between_appearances],
+                      precision: 2
+                    ) %> concursos
+              <% else %>
+                —
+              <% end %>
+            </td>
+
+            <td class="px-5 py-3 text-right text-slate-300">
+              <%= item[:maximum_historical_delay] || "—" %>
+            </td>
+
+            <td class="px-5 py-3 text-right text-slate-400">
+              <%= item[:average_historical_delay] ?
+                    number_with_precision(item[:average_historical_delay], precision: 2) :
+                    "—" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Maiores atrasos históricos</h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Maior intervalo concluído sem aparição, desconsiderando o atraso atual.
+    </p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Dezena</th>
+          <th class="px-5 py-3 text-right">Maior atraso</th>
+          <th class="px-5 py-3 text-right">Atraso médio</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% @analysis[:rankings][:largest_historical_delay].first(20).each do |item| %>
+          <tr>
+            <td class="px-5 py-3 font-bold text-white"><%= "%02d" % item[:number] %></td>
+            <td class="px-5 py-3 text-right text-lime-300">
+              <%= item[:maximum_historical_delay] %>
+            </td>
+            <td class="px-5 py-3 text-right text-slate-400">
+              <%= number_with_precision(item[:average_historical_delay], precision: 2) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Histórico das 60 dezenas</h2>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Dezena</th>
+          <th class="px-5 py-3 text-right">Aparições</th>
+          <th class="px-5 py-3 text-right">Atraso atual</th>
+          <th class="px-5 py-3 text-right">Maior atraso histórico</th>
+          <th class="px-5 py-3 text-right">Atraso médio histórico</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% @analysis[:data].each do |item| %>
+          <tr>
+            <td class="px-5 py-3 font-bold text-white"><%= "%02d" % item[:number] %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:occurrence_count] %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:current_delay] || "—" %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:maximum_historical_delay] || "—" %></td>
+            <td class="px-5 py-3 text-right text-slate-400">
+              <%= item[:average_historical_delay] ? number_with_precision(item[:average_historical_delay], precision: 2) : "—" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>

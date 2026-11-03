@@ -1,0 +1,176 @@
+
+<%
+  statistics_page = controller_name == "statistics"
+
+  selected_analysis =
+    if statistics_page
+      params[:analysis].presence || "overview"
+    end
+
+  dashboard_active = controller_name == "dashboard"
+  imports_active = controller_name == "import_batches"
+  combinations_active = controller_name == "combination_analyses"
+  revenue_active = controller_name == "revenue_analyses"
+
+  navigation_items = [
+    { key: "overview", label: "Visão geral", icon: "◫" },
+    { key: "frequency", label: "Frequência", icon: "◉" },
+    { key: "parity", label: "Paridade", icon: "◐" },
+    { key: "sum", label: "Soma das dezenas", icon: "∑" },
+    { key: "sequence", label: "Sequências", icon: "↗" },
+    { key: "delay", label: "Atrasos", icon: "◷" },
+    { key: "combination", label: "Combinações", icon: "⌘" }
+  ]
+%>
+
+<aside class="h-fit rounded-2xl border border-slate-800 bg-slate-900 p-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
+
+  <div class="mb-5 px-2">
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+      MegaStats
+    </p>
+
+    <h2 class="mt-2 text-lg font-bold text-white">
+      Navegação
+    </h2>
+  </div>
+
+  <nav aria-label="Navegação principal" class="space-y-1">
+
+    <%= link_to root_path,
+          aria: { current: dashboard_active ? "page" : nil },
+          class: [
+            "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+            dashboard_active ?
+              "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" :
+              "text-slate-400 hover:bg-slate-800 hover:text-white"
+          ].join(" ") do %>
+
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-base">
+        ◧
+      </span>
+
+      <span>Dashboard</span>
+
+      <% if dashboard_active %>
+        <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
+      <% end %>
+    <% end %>
+
+  </nav>
+
+  <div class="mt-6 border-t border-slate-800 pt-5">
+    <p class="px-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
+      Análises estatísticas
+    </p>
+
+    <nav aria-label="Análises estatísticas" class="mt-3 space-y-1">
+      <% navigation_items.each do |item| %>
+        <% active = statistics_page && selected_analysis == item[:key] %>
+
+        <%= link_to statistics_path(
+              analysis: item[:key] == "overview" ? nil : item[:key]
+            ),
+            aria: { current: active ? "page" : nil },
+            class: [
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+              active ?
+                "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" :
+                "text-slate-400 hover:bg-slate-800 hover:text-white"
+            ].join(" ") do %>
+
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-base">
+            <%= item[:icon] %>
+          </span>
+
+          <span><%= item[:label] %></span>
+
+          <% if active %>
+            <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </nav>
+  </div>
+
+  <div class="mt-6 border-t border-slate-800 pt-5">
+    <p class="px-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
+      Outras funcionalidades
+    </p>
+
+    <nav aria-label="Outras funcionalidades" class="mt-3 space-y-1">
+
+      <%= link_to import_batches_path,
+            aria: { current: imports_active ? "page" : nil },
+            class: [
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+              imports_active ?
+                "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" :
+                "text-slate-400 hover:bg-slate-800 hover:text-white"
+            ].join(" ") do %>
+
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800">
+          ⇧
+        </span>
+
+        <span>Importações</span>
+
+        <% if imports_active %>
+          <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
+        <% end %>
+      <% end %>
+
+      <%= link_to new_import_batch_path,
+            class: "ml-11 block rounded-lg px-3 py-2
+                    text-xs font-medium text-slate-500
+                    transition hover:bg-slate-800
+                    hover:text-lime-300" do %>
+          + Nova importação
+      <% end %>
+
+      <%= link_to combination_analyses_path,
+            aria: { current: combinations_active ? "page" : nil },
+            class: [
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+              combinations_active ?
+                "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" :
+                "text-slate-400 hover:bg-slate-800 hover:text-white"
+            ].join(" ") do %>
+
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800">
+          ✳
+        </span>
+
+        <span>Gerador de combinações</span>
+
+        <% if combinations_active %>
+          <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
+        <% end %>
+      <% end %>
+
+      <%= link_to revenue_analyses_path,
+            aria: { current: revenue_active ? "page" : nil },
+            class: [
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+              revenue_active ?
+                "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" :
+                "text-slate-400 hover:bg-slate-800 hover:text-white"
+            ].join(" ") do %>
+
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800">
+          $
+        </span>
+
+        <span>Análise por arrecadação</span>
+
+        <% if revenue_active %>
+          <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
+        <% end %>
+
+      <% end %>
+
+    </nav>
+  </div>
+
+</aside>
+

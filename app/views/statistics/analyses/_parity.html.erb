@@ -1,0 +1,90 @@
+
+<% metrics = @analysis[:metrics] %>
+<% distribution = @analysis[:data] %>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Dezenas pares",
+        value: number_with_delimiter(metrics[:even_occurrences], delimiter: "."),
+        description: number_to_percentage(metrics[:even_percentage], precision: 2) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Dezenas ímpares",
+        value: number_with_delimiter(metrics[:odd_occurrences], delimiter: "."),
+        description: number_to_percentage(metrics[:odd_percentage], precision: 2) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Total de dezenas",
+        value: number_with_delimiter(metrics[:total_numbers], delimiter: ".") %>
+
+</section>
+
+<article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+  <h2 class="text-lg font-semibold text-white">
+    Distribuição de pares e ímpares por concurso
+  </h2>
+
+  <div class="mt-5 space-y-4">
+    <% distribution.each do |item| %>
+      <div>
+        <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+          <span class="font-semibold text-white"><%= item[:label] %></span>
+          <span class="text-slate-400">
+            <%= number_with_delimiter(item[:occurrences], delimiter: ".") %>
+            concursos · <%= number_to_percentage(item[:percentage], precision: 2) %>
+          </span>
+        </div>
+
+        <div class="h-3 overflow-hidden rounded-full bg-slate-800">
+          <div class="h-full rounded-full bg-lime-400"
+               style="width: <%= item[:percentage] %>%"></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</article>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Ranking das distribuições</h2>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Posição</th>
+          <th class="px-5 py-3">Distribuição</th>
+          <th class="px-5 py-3 text-right">Concursos</th>
+          <th class="px-5 py-3 text-right">Percentual</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% @analysis[:rankings][:most_frequent].each_with_index do |item, index| %>
+          <tr>
+            <td class="px-5 py-3 text-slate-500"><%= index + 1 %>º</td>
+            <td class="px-5 py-3 font-semibold text-white"><%= item[:label] %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:occurrences] %></td>
+            <td class="px-5 py-3 text-right text-slate-400">
+              <%= number_to_percentage(item[:percentage], precision: 2) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<% most_frequent = @analysis[:most_frequent_distribution] %>
+
+<% if most_frequent %>
+  <div class="rounded-xl border border-lime-400/20 bg-lime-400/5 p-5">
+    <p class="text-sm text-slate-400">Distribuição mais frequente</p>
+    <p class="mt-2 text-xl font-bold text-lime-300"><%= most_frequent[:label] %></p>
+    <p class="mt-1 text-sm text-slate-300">
+      <%= most_frequent[:occurrences] %> concursos
+    </p>
+  </div>
+<% end %>

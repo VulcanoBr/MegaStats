@@ -1,0 +1,153 @@
+<div class="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+  <header>
+    <h1 class="text-3xl font-bold text-white">
+      Consultar combinação
+    </h1>
+    <p class="mt-2 text-sm text-slate-400">
+      Informe seis números para verificar sua ocorrência histórica.
+    </p>
+  </header>
+
+  <% if flash.now[:alert].present? %>
+    <div class="rounded-lg border border-rose-800 bg-rose-950 p-4 text-rose-200">
+      <%= flash.now[:alert] %>
+    </div>
+  <% end %>
+
+  <%= form_with url: combination_analyses_path,
+              method: :post,
+              data: { turbo: false },
+              class: "rounded-2xl border border-slate-800 bg-slate-900 p-6" do |form| %>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <% 6.times do |index| %>
+        <div>
+          <%= label_tag "numbers_#{index}",
+                        "Número #{index + 1}",
+                        class: "mb-2 block text-sm text-slate-300" %>
+
+          <%= number_field_tag "numbers[]",
+                               @numbers[index],
+                               min: 1,
+                               max: 60,
+                               required: true,
+                               class: "w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%= form.submit "Consultar combinação",
+                    class: "mt-6 rounded-lg bg-lime-400 px-5 py-3 font-semibold text-slate-950 hover:bg-lime-300" %>
+  <% end %>
+
+  <% if @result %>
+    <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <h2 class="text-xl font-semibold text-white">
+        Resultado da consulta
+      </h2>
+
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl bg-slate-950 p-4">
+          <p class="text-sm text-slate-400">Combinação consultada</p>
+
+          <p class="mt-2 text-xl font-bold tracking-wider text-lime-400">
+            <%= @result[:numbers].map { |number| "%02d" % number }.join(" - ") %>
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-slate-950 p-4">
+          <p class="text-sm text-slate-400">Ocorrências históricas</p>
+
+          <p class="mt-2 text-2xl font-bold text-white">
+            <%= @result[:historical_occurrences] %>
+          </p>
+        </div>
+
+        <div class="rounded-xl bg-slate-950 p-4 sm:col-span-2">
+          <p class="text-sm text-slate-400">Probabilidade teórica de acerto</p>
+
+          <p class="mt-2 text-lg font-semibold text-white">
+            1 em <%= number_with_delimiter(@result[:theoretical_probability].split.last.to_i, delimiter: ".") %>
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="mb-4 text-lg font-semibold text-white">
+          Estatísticas individuais das dezenas
+        </h3>
+
+        <p class="mb-4 text-sm text-slate-400">
+          Frequência histórica e quantidade de concursos desde a última ocorrência
+          de cada dezena.
+        </p>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-950 text-slate-400">
+              <tr>
+                <th class="px-4 py-3 font-medium">Dezena</th>
+                <th class="px-4 py-3 text-center font-medium">
+                  Ocorrências históricas
+                </th>
+                <th class="px-4 py-3 text-center font-medium">
+                  Concursos sem sair
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-800 bg-slate-900">
+              <% @result[:number_statistics].each do |item| %>
+                <tr class="hover:bg-slate-800/60">
+                  <td class="px-4 py-3">
+                    <span class="flex size-9 items-center justify-center rounded-full bg-lime-400 font-bold text-slate-950">
+                      <%= "%02d" % item[:number] %>
+                    </span>
+                  </td>
+
+                  <td class="px-4 py-3 text-center font-semibold text-white">
+                    <%= item[:occurrence_count] %>
+                  </td>
+
+                  <td class="px-4 py-3 text-center font-semibold text-white">
+                    <% if item[:current_delay].nil? %>
+                      <span class="text-slate-500">Sem histórico</span>
+                    <% else %>
+                      <%= item[:current_delay] %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <% if @result[:contests].any? %>
+        <div class="mt-5">
+          <h3 class="text-sm font-semibold text-white">
+            Concursos em que a combinação ocorreu
+          </h3>
+
+          <p class="mt-2 text-sm leading-6 text-slate-300">
+            <%= @result[:contests].join(", ") %>
+          </p>
+        </div>
+      <% else %>
+        <p class="mt-5 rounded-lg border border-lime-900 bg-lime-950/40 p-4 text-sm text-lime-300">
+          Essa combinação não foi encontrada no histórico importado.
+        </p>
+      <% end %>
+    </section>
+  <% end %>
+
+  <nav class="flex flex-wrap gap-4 text-sm">
+    <%= link_to "Gerar cinco combinações inéditas",
+                unseen_combination_analyses_path,
+                class: "text-lime-400 hover:text-lime-300" %>
+
+    <%= link_to "Ver combinações menos frequentes",
+                least_frequent_combination_analyses_path,
+                class: "text-lime-400 hover:text-lime-300" %>
+  </nav>
+</div>

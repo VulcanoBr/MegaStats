@@ -1,0 +1,260 @@
+
+<% metrics = @analysis[:metrics] %>
+<% pairs = @analysis[:pairs] %>
+<% triples = @analysis[:triples] %>
+<% complete = @analysis[:complete_combinations] %>
+<% consecutive = @analysis[:consecutive_draws] %>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Pares distintos",
+        value: number_with_delimiter(pairs[:distinct_observed], delimiter: "."),
+        description: "De #{number_with_delimiter(pairs[:total_possible], delimiter: ".")} possíveis." %>
+
+  <%= render "statistics/metric_cards",
+        title: "Trincas distintas",
+        value: number_with_delimiter(triples[:distinct_observed], delimiter: "."),
+        description: "De #{number_with_delimiter(triples[:total_possible], delimiter: ".")} possíveis." %>
+
+  <%= render "statistics/metric_cards",
+        title: "Combinações completas distintas",
+        value: number_with_delimiter(complete[:distinct_observed], delimiter: "."),
+        description: "De 50.063.860 possíveis." %>
+
+  <%= render "statistics/metric_cards",
+        title: "Pares recorrentes",
+        value: number_with_delimiter(pairs[:repeated_count], delimiter: ".") %>
+
+  <%= render "statistics/metric_cards",
+        title: "Trincas recorrentes",
+        value: number_with_delimiter(triples[:repeated_count], delimiter: ".") %>
+
+  <%= render "statistics/metric_cards",
+        title: "Combinações completas recorrentes",
+        value: number_with_delimiter(complete[:repeated_count], delimiter: ".") %>
+
+</section>
+
+<section class="grid gap-6 xl:grid-cols-2">
+
+  <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+    <div class="p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">15 pares mais frequentes</h2>
+      <p class="mt-1 text-sm text-slate-400">
+        Frequência de cada par nos concursos analisados.
+      </p>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-5 py-3">Par</th>
+            <th class="px-5 py-3 text-right">Ocorrências</th>
+            <th class="px-5 py-3 text-right">Percentual</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-800">
+          <% @analysis[:rankings][:most_frequent_pairs].first(15).each do |item| %>
+            <tr>
+              <td class="px-5 py-3 font-bold text-white">
+                <%= item[:numbers].map { |number| "%02d" % number }.join(" - ") %>
+              </td>
+              <td class="px-5 py-3 text-right text-slate-300"><%= item[:occurrence_count] %></td>
+              <td class="px-5 py-3 text-right text-slate-400">
+                <%= number_to_percentage(item[:percentage], precision: 2) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+    <div class="p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">15 trincas mais frequentes</h2>
+      <p class="mt-1 text-sm text-slate-400">
+        Frequência de cada trinca nos concursos analisados.
+      </p>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-5 py-3">Trinca</th>
+            <th class="px-5 py-3 text-right">Ocorrências</th>
+            <th class="px-5 py-3 text-right">Percentual</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-800">
+          <% @analysis[:rankings][:most_frequent_triples].first(15).each do |item| %>
+            <tr>
+              <td class="px-5 py-3 font-bold text-white">
+                <%= item[:numbers].map { |number| "%02d" % number }.join(" - ") %>
+              </td>
+              <td class="px-5 py-3 text-right text-slate-300"><%= item[:occurrence_count] %></td>
+              <td class="px-5 py-3 text-right text-slate-400">
+                <%= number_to_percentage(item[:percentage], precision: 2) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+</section>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Combinações completas recorrentes</h2>
+    <p class="mt-1 text-sm text-slate-400">
+      Combinações de seis dezenas que apareceram mais de uma vez.
+    </p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Combinação</th>
+          <th class="px-5 py-3 text-right">Ocorrências</th>
+          <th class="px-5 py-3 text-right">Percentual</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% if complete[:recurrent].any? %>
+          <% complete[:recurrent].first(20).each do |item| %>
+            <tr>
+              <td class="px-5 py-3 font-semibold text-white">
+                <%= item[:numbers].map { |number| "%02d" % number }.join(" - ") %>
+              </td>
+              <td class="px-5 py-3 text-right text-slate-300"><%= item[:occurrence_count] %></td>
+              <td class="px-5 py-3 text-right text-slate-400">
+                <%= number_to_percentage(item[:percentage], precision: 4) %>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="3" class="px-5 py-8 text-center text-slate-500">
+              Nenhuma combinação completa recorrente foi encontrada.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<section class="grid gap-6 xl:grid-cols-2">
+
+  <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">
+      Repetição entre concursos consecutivos
+    </h2>
+
+    <div class="mt-5 grid grid-cols-2 gap-3">
+      <div class="rounded-xl bg-slate-950 p-4">
+        <p class="text-sm text-slate-400">Transições analisadas</p>
+        <p class="mt-2 text-2xl font-bold text-white">
+          <%= consecutive[:total_transitions] %>
+        </p>
+      </div>
+
+      <div class="rounded-xl bg-slate-950 p-4">
+        <p class="text-sm text-slate-400">Média de repetidas</p>
+        <p class="mt-2 text-2xl font-bold text-white">
+          <%= number_with_precision(consecutive[:average_repeated_numbers] || 0, precision: 2) %>
+        </p>
+      </div>
+
+      <div class="rounded-xl bg-slate-950 p-4">
+        <p class="text-sm text-slate-400">Com repetição</p>
+        <p class="mt-2 text-2xl font-bold text-white">
+          <%= consecutive[:transitions_with_repetitions] %>
+        </p>
+      </div>
+
+      <div class="rounded-xl bg-slate-950 p-4">
+        <p class="text-sm text-slate-400">Sem repetição</p>
+        <p class="mt-2 text-2xl font-bold text-white">
+          <%= consecutive[:transitions_without_repetitions] %>
+        </p>
+      </div>
+    </div>
+
+    <h3 class="mt-7 text-sm font-semibold text-white">
+      Distribuição das repetições
+    </h3>
+
+    <div class="mt-4 space-y-4">
+      <% max_transitions = [consecutive[:distribution].map { |item| item[:transition_count] }.max.to_i, 1].max %>
+
+      <% consecutive[:distribution].each do |item| %>
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+            <span class="text-slate-300">
+              <%= item[:repeated_count] %> dezenas repetidas
+            </span>
+
+            <span class="text-slate-400">
+              <%= item[:transition_count] %> ·
+              <%= number_to_percentage(item[:percentage], precision: 2) %>
+            </span>
+          </div>
+
+          <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div class="h-full rounded-full bg-lime-400"
+                 style="width: <%= item[:transition_count].fdiv(max_transitions) * 100 %>%"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+    <div class="p-5 sm:p-6">
+      <h2 class="text-lg font-semibold text-white">
+        Transições com maior repetição
+      </h2>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-5 py-3">Transição</th>
+            <th class="px-5 py-3 text-right">Quantidade</th>
+            <th class="px-5 py-3">Dezenas</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-800">
+          <% @analysis[:rankings][:most_repeated_between_consecutive_draws].first(15).each do |item| %>
+            <tr>
+              <td class="whitespace-nowrap px-5 py-3 font-semibold text-white">
+                <%= item[:previous_contest] %> → <%= item[:current_contest] %>
+              </td>
+
+              <td class="px-5 py-3 text-right text-lime-300">
+                <%= item[:repeated_count] %>
+              </td>
+
+              <td class="px-5 py-3 text-slate-300">
+                <%= item[:repeated_numbers].map { |number| "%02d" % number }.join(", ") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+</section>

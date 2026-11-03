@@ -1,0 +1,107 @@
+
+<% metrics = @analysis[:metrics] %>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Soma média",
+        value: number_with_precision(metrics[:mean], precision: 2) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Mediana",
+        value: number_with_precision(metrics[:median], precision: 2) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Soma mínima",
+        value: metrics[:minimum] || "—" %>
+
+  <%= render "statistics/metric_cards",
+        title: "Soma máxima",
+        value: metrics[:maximum] || "—" %>
+
+  <%= render "statistics/metric_cards",
+        title: "Amplitude",
+        value: metrics[:amplitude] || "—" %>
+
+  <%= render "statistics/metric_cards",
+        title: "Desvio padrão",
+        value: number_with_precision(metrics[:standard_deviation], precision: 2) %>
+
+</section>
+
+<article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+  <h2 class="text-lg font-semibold text-white">Distribuição das somas</h2>
+
+  <p class="mt-1 text-sm text-slate-400">
+    Frequência de concursos em cada faixa de soma.
+  </p>
+
+  <div class="mt-6 space-y-5">
+    <% max_occurrences = [@analysis[:distribution].map { |item| item[:occurrences] }.max.to_i, 1].max %>
+
+    <% @analysis[:distribution].each do |item| %>
+      <div>
+        <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+          <span class="font-semibold text-white"><%= item[:label] %></span>
+          <span class="text-slate-400">
+            <%= item[:occurrences] %> concursos ·
+            <%= number_to_percentage(item[:percentage], precision: 2) %>
+          </span>
+        </div>
+
+        <div class="h-3 overflow-hidden rounded-full bg-slate-800">
+          <div class="h-full rounded-full bg-lime-400"
+               style="width: <%= item[:occurrences].fdiv(max_occurrences) * 100 %>%"></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</article>
+
+<article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+  <div class="p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">Faixas mais frequentes</h2>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-slate-950 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Posição</th>
+          <th class="px-5 py-3">Faixa</th>
+          <th class="px-5 py-3 text-right">Concursos</th>
+          <th class="px-5 py-3 text-right">Percentual</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800">
+        <% @analysis[:rankings][:most_frequent].each_with_index do |item, index| %>
+          <tr>
+            <td class="px-5 py-3 text-slate-500"><%= index + 1 %>º</td>
+            <td class="px-5 py-3 font-semibold text-white"><%= item[:label] %></td>
+            <td class="px-5 py-3 text-right text-slate-300"><%= item[:occurrences] %></td>
+            <td class="px-5 py-3 text-right text-slate-400">
+              <%= number_to_percentage(item[:percentage], precision: 2) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<article class="grid gap-4 sm:grid-cols-2">
+  <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+    <p class="text-sm text-slate-400">Variância populacional</p>
+    <p class="mt-2 text-2xl font-bold text-white">
+      <%= number_with_precision(metrics[:variance], precision: 2) %>
+    </p>
+  </div>
+
+  <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+    <p class="text-sm text-slate-400">Concursos analisados</p>
+    <p class="mt-2 text-2xl font-bold text-white">
+      <%= number_with_delimiter(@analysis[:total_draws], delimiter: ".") %>
+    </p>
+  </div>
+</article>

@@ -1,0 +1,80 @@
+
+<section class="space-y-6">
+
+  <div>
+    <h2 class="text-xl font-semibold text-white">
+      Frequência por faixa de arrecadação
+    </h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Compare as ocorrências e os percentuais das 60 dezenas.
+    </p>
+  </div>
+
+  <div class="overflow-x-auto rounded-xl border border-slate-700">
+
+    <table class="min-w-full divide-y divide-slate-700 text-sm">
+
+      <thead class="bg-slate-800">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold text-white">
+            Dezena
+          </th>
+
+          <% @range_comparison[:ranges].each do |range| %>
+            <th class="px-4 py-3 text-center font-semibold text-white">
+              <%= range[:name] %>
+            </th>
+          <% end %>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-800 bg-slate-900">
+
+        <% (1..60).each do |number| %>
+          <tr class="hover:bg-slate-800/70">
+
+            <td class="whitespace-nowrap px-4 py-3 font-semibold text-lime-300">
+              <%= "%02d" % number %>
+            </td>
+
+            <% @range_comparison[:ranges].each do |range| %>
+              <% frequency = range[:frequencies].find do |item|
+                   item[:number] == number
+                 end %>
+
+              <td class="whitespace-nowrap px-4 py-3 text-center text-slate-300">
+
+                <% if range[:total_draws].positive? %>
+                  <span class="font-medium text-white">
+                    <%= number_to_percentage(
+                          frequency[:percentage],
+                          precision: 2
+                        ) %>
+                  </span>
+
+                  <span class="text-xs text-slate-500">
+                    (<%= frequency[:count] %>)
+                  </span>
+                <% else %>
+                  <span class="text-slate-600">—</span>
+                <% end %>
+
+              </td>
+            <% end %>
+
+          </tr>
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <p class="text-xs text-slate-500">
+    Percentual = ocorrências da dezena ÷ total de concursos da faixa × 100.
+    O número entre parênteses representa a quantidade de ocorrências.
+  </p>
+
+</section>

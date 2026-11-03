@@ -1,0 +1,109 @@
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Concursos registrados",
+        value: number_with_delimiter(@total_draws, delimiter: ".") %>
+
+  <%= render "statistics/metric_cards",
+        title: "Primeiro concurso",
+        value: @first_draw&.contest_number || "—",
+        description: (@first_draw&.draw_date ? l(@first_draw.draw_date) : nil) %>
+
+  <%= render "statistics/metric_cards",
+        title: "Último concurso",
+        value: @last_draw&.contest_number || "—",
+        description: (@last_draw&.draw_date ? l(@last_draw.draw_date) : nil) %>
+
+</section>
+
+<section class="grid gap-6 xl:grid-cols-2">
+
+  <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg font-semibold text-white">
+        Dezenas mais sorteadas
+      </h2>
+
+      <%= link_to "Ver análise", statistics_path(analysis: "frequency"),
+            class: "text-sm font-semibold text-lime-400 hover:text-lime-300" %>
+    </div>
+
+    <div class="mt-6 space-y-5">
+      <% max_occurrences = [@top_numbers.first&.dig(:occurrences).to_i, 1].max %>
+
+      <% @top_numbers.each do |item| %>
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+            <span class="font-semibold text-white">
+              <%= "%02d" % item[:number] %>
+            </span>
+
+            <span class="text-right text-slate-400">
+              <%= number_with_delimiter(item[:occurrences], delimiter: ".") %>
+              ocorrências
+              ·
+              <%= number_to_percentage(item[:percentage], precision: 2) %>
+            </span>
+          </div>
+
+          <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div class="h-full rounded-full bg-lime-400"
+                 style="width: <%= item[:occurrences].fdiv(max_occurrences) * 100 %>%">
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg font-semibold text-white">
+        Dezenas menos sorteadas
+      </h2>
+
+      <%= link_to "Ver análise", statistics_path(analysis: "frequency"),
+            class: "text-sm font-semibold text-lime-400 hover:text-lime-300" %>
+    </div>
+
+    <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <% @least_numbers.each do |item| %>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-2xl font-bold text-white">
+            <%= "%02d" % item[:number] %>
+          </p>
+
+          <p class="mt-1 text-xs text-slate-400">
+            <%= item[:occurrences] %> ocorrências
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </article>
+
+</section>
+
+<section class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+  <div>
+    <h2 class="text-lg font-semibold text-white">
+      Análises disponíveis
+    </h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Selecione uma categoria para consultar os indicadores detalhados.
+    </p>
+  </div>
+
+  <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <% @analysis_options.each do |key, option| %>
+      <%= link_to statistics_path(analysis: key),
+            class: "rounded-xl border border-slate-800 bg-slate-950 p-4 transition hover:border-lime-400/50 hover:bg-slate-800" do %>
+        <h3 class="font-semibold text-white"><%= option[:title] %></h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-400">
+          <%= option[:description] %>
+        </p>
+      <% end %>
+    <% end %>
+  </div>
+</section>

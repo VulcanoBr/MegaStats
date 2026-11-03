@@ -1,0 +1,97 @@
+
+<% metrics = @analysis[:metrics] %>
+<% top_numbers = @analysis[:rankings][:most_frequent].first(10) %>
+<% least_numbers = @analysis[:rankings][:least_frequent].first(10) %>
+<% max_occurrences = [top_numbers.first&.dig(:occurrences).to_i, 1].max %>
+
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+  <%= render "statistics/metric_cards",
+        title: "Total de ocorrências",
+        value: number_with_delimiter(metrics[:total_occurrences], delimiter: ".") %>
+
+  <%= render "statistics/metric_cards",
+        title: "Frequência esperada",
+        value: number_with_delimiter(metrics[:expected_occurrences], delimiter: "."),
+        description: "Valor esperado por dezena no modelo uniforme." %>
+
+  <%= render "statistics/metric_cards",
+        title: "Dezenas analisadas",
+        value: @analysis[:data].size %>
+
+</section>
+
+<section class="grid gap-6 xl:grid-cols-2">
+
+  <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">10 dezenas mais frequentes</h2>
+
+    <div class="mt-6 space-y-5">
+      <% top_numbers.each do |item| %>
+        <div>
+          <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+            <span class="font-semibold text-white"><%= "%02d" % item[:number] %></span>
+            <span class="text-slate-400">
+              <%= item[:occurrences] %> · <%= number_to_percentage(item[:percentage], precision: 2) %>
+            </span>
+          </div>
+
+          <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div class="h-full rounded-full bg-lime-400"
+                 style="width: <%= item[:occurrences].fdiv(max_occurrences) * 100 %>%"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-white">10 dezenas menos frequentes</h2>
+
+    <div class="mt-5 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="py-3">Dezena</th>
+            <th class="py-3 text-right">Ocorrências</th>
+            <th class="py-3 text-right">Percentual</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-800">
+          <% least_numbers.each do |item| %>
+            <tr>
+              <td class="py-3 font-semibold text-white"><%= "%02d" % item[:number] %></td>
+              <td class="py-3 text-right text-slate-300"><%= item[:occurrences] %></td>
+              <td class="py-3 text-right text-slate-400">
+                <%= number_to_percentage(item[:percentage], precision: 2) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+</section>
+
+<article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+  <h2 class="text-lg font-semibold text-white">Frequência de todas as dezenas</h2>
+
+  <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <% @analysis[:data].each do |item| %>
+      <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-lg font-bold text-white"><%= "%02d" % item[:number] %></span>
+          <span class="text-xs text-slate-500">
+            <%= number_to_percentage(item[:percentage], precision: 1) %>
+          </span>
+        </div>
+
+        <p class="mt-2 text-sm text-slate-400">
+          <%= number_with_delimiter(item[:occurrences], delimiter: ".") %> ocorrências
+        </p>
+      </div>
+    <% end %>
+  </div>
+</article>
