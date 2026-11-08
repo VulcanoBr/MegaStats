@@ -269,6 +269,7 @@ Entre os elementos previstos:
 - Comparação de períodos.
 - Visualização de indicadores históricos.
 - Exportação de resultados e relatórios.
+- Consulta de ganhadores por concurso.
 
 ---
 
@@ -322,7 +323,7 @@ Esse resultado demonstra o funcionamento da importação incremental e da preser
 
 ---
 
-## 7. Arquitetura da aplicação
+## 7. Arquitetura da aplicação.
 
 O MegaStats utiliza a arquitetura MVC do Ruby on Rails, complementada por serviços de domínio para separar regras de negócio dos controllers.
 
@@ -363,6 +364,8 @@ Responsáveis pela apresentação dos dados e interação com o usuário.
 - Transações para operações de gravação.
 - Testes automatizados.
 - Código organizado para facilitar a evolução dos módulos estatísticos.
+
+### - [VER Visão detalhada da arquitetura.](ARCHITECTURE.md).
 
 ---
 

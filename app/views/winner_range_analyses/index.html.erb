@@ -1,0 +1,169 @@
+
+<div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+
+  <header>
+    <h1 class="text-3xl font-bold text-white">
+      Análise por faixa de ganhadores
+    </h1>
+
+    <p class="mt-2 text-sm text-slate-400">
+      Analise a frequência e a ausência das dezenas conforme
+      a quantidade de ganhadores do prêmio principal.
+    </p>
+  </header>
+
+  <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <h2 class="font-semibold text-white">
+      Filtros da análise
+    </h2>
+
+    <%= form_with url: winner_range_analyses_path,
+                  method: :get,
+                  class: "mt-5 space-y-5" do |form| %>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+
+        <div>
+          <%= form.label :minimum_winners,
+                         "Mínimo de ganhadores da Sena",
+                         class: "mb-2 block text-sm font-medium text-slate-300" %>
+
+          <%= form.number_field :minimum_winners,
+                                value: @minimum_winners,
+                                min: 0,
+                                step: 1,
+                                required: true,
+                                placeholder: "Ex.: 0",
+                                class: "w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white focus:border-lime-400 focus:outline-none" %>
+        </div>
+
+        <div>
+          <%= form.label :maximum_winners,
+                         "Máximo de ganhadores da Sena",
+                         class: "mb-2 block text-sm font-medium text-slate-300" %>
+
+          <%= form.number_field :maximum_winners,
+                                value: @maximum_winners,
+                                min: 0,
+                                step: 1,
+                                required: true,
+                                placeholder: "Ex.: 3",
+                                class: "w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white focus:border-lime-400 focus:outline-none" %>
+        </div>
+
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <%= form.submit "Analisar concursos",
+                        class: "rounded-xl bg-lime-400 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-lime-300" %>
+
+        <%= link_to "Limpar filtros",
+                    winner_range_analyses_path,
+                    class: "rounded-xl border border-slate-700 px-6 py-3 text-sm font-medium text-slate-300 hover:bg-slate-800" %>
+      </div>
+    <% end %>
+  </section>
+
+  <% if @analysis_error.present? %>
+    <div class="rounded-xl border border-rose-900 bg-rose-950/30 p-4 text-sm text-rose-200"
+         role="alert">
+      <%= @analysis_error %>
+    </div>
+  <% end %>
+
+  <% if @analysis.present? %>
+
+    <% if @analysis[:total_draws].zero? %>
+
+      <div class="rounded-xl border border-amber-900 bg-amber-950/20 p-5 text-sm text-amber-200">
+        Nenhum concurso foi encontrado dentro da faixa de ganhadores informada.
+      </div>
+
+    <% else %>
+
+      <section class="grid gap-4 sm:grid-cols-3">
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <p class="text-sm text-slate-400">Concursos encontrados</p>
+          <p class="mt-2 text-3xl font-bold text-white tabular-nums">
+            <%= number_with_delimiter(@analysis[:total_draws]) %>
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <p class="text-sm text-slate-400">Faixa mínima</p>
+          <p class="mt-2 text-3xl font-bold text-white tabular-nums">
+            <%= @analysis[:minimum_winners] %>
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <p class="text-sm text-slate-400">Faixa máxima</p>
+          <p class="mt-2 text-3xl font-bold text-white tabular-nums">
+            <%= @analysis[:maximum_winners] %>
+          </p>
+        </div>
+
+      </section>
+
+      <section class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+
+        <div class="border-b border-slate-800 p-6">
+          <h2 class="text-lg font-semibold text-white">
+            Frequência das dezenas
+          </h2>
+
+          <p class="mt-1 text-sm text-slate-400">
+            Quantidade de concursos em que cada dezena foi sorteada
+            ou não foi sorteada.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+
+            <thead class="bg-slate-950 text-xs uppercase text-slate-400">
+              <tr>
+                <th class="px-5 py-4">Dezena</th>
+                <th class="px-5 py-4 text-right">Sorteada</th>
+                <th class="px-5 py-4 text-right">Não sorteada</th>
+                <th class="px-5 py-4 text-right">% sorteada</th>
+                <th class="px-5 py-4 text-right">% não sorteada</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-slate-800 text-slate-300">
+              <% @analysis[:numbers].each do |item| %>
+                <tr class="transition hover:bg-slate-800/50">
+
+                  <td class="px-5 py-3 font-bold text-white tabular-nums">
+                    <%= item[:number].to_s.rjust(2, "0") %>
+                  </td>
+
+                  <td class="px-5 py-3 text-right tabular-nums">
+                    <%= number_with_delimiter(item[:appearances]) %>
+                  </td>
+
+                  <td class="px-5 py-3 text-right tabular-nums">
+                    <%= number_with_delimiter(item[:non_appearances]) %>
+                  </td>
+
+                  <td class="px-5 py-3 text-right tabular-nums text-lime-300">
+                    <%= number_to_percentage(item[:appearance_percentage], precision: 2) %>
+                  </td>
+
+                  <td class="px-5 py-3 text-right tabular-nums text-amber-300">
+                    <%= number_to_percentage(item[:non_appearance_percentage], precision: 2) %>
+                  </td>
+
+                </tr>
+              <% end %>
+            </tbody>
+
+          </table>
+        </div>
+      </section>
+
+    <% end %>
+  <% end %>
+</div>
