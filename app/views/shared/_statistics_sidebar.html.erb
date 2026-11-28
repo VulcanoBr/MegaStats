@@ -11,6 +11,7 @@
   combinations_active = controller_name == "combination_analyses"
   revenue_active = controller_name == "revenue_analyses"
   random_draw_active = controller_name == "random_draws"
+  virada_active = controller_name == "virada_analyses"
 
   navigation_items = [
     { key: "overview", label: "Visão geral", icon: "◫" },
@@ -170,6 +171,26 @@
         <span>Sorteio aleatório</span>
 
         <% if random_draw_active %>
+          <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
+        <% end %>
+      <% end %>
+
+      <%= link_to virada_analyses_path,
+            aria: { current: virada_active ? "page" : nil },
+            class: [
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+              virada_active ?
+                "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" :
+                "text-slate-400 hover:bg-slate-800 hover:text-white"
+            ].join(" ") do %>
+
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800">
+          ✦
+        </span>
+
+        <span>Mega da Virada</span>
+
+        <% if virada_active %>
           <span class="ml-auto h-2 w-2 rounded-full bg-lime-400"></span>
         <% end %>
       <% end %>

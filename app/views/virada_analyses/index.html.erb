@@ -1,0 +1,172 @@
+<% content_for :title, "Mega da Virada · MegaStats" %>
+
+<% result = @result %>
+
+<div class="space-y-6">
+  <header>
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Análises</p>
+    <h1 class="mt-2 text-3xl font-bold text-white">Mega da Virada</h1>
+    <p class="mt-2 max-w-3xl text-sm text-slate-400">
+      Dezenas sorteadas em cada edição da Mega da Virada e, para cada dezena, quantas vezes já saiu nas Viradas e
+      há quantas edições não aparece desde a última vez em que saiu.
+    </p>
+  </header>
+
+  <% if result.editions.empty? %>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-sm text-slate-300">
+      Nenhum concurso da Mega da Virada encontrado. Importe o histórico completo (a primeira edição é o concurso de 31/12/2009).
+    </div>
+  <% else %>
+    <% latest = result.latest %>
+
+    <%# Indicadores %>
+    <section class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Edições</p>
+        <p class="mt-2 text-3xl font-bold text-white"><%= result.total_editions %></p>
+        <p class="mt-1 text-xs text-slate-500">Virada <%= result.editions.first.year %> a <%= latest.year %></p>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Última edição</p>
+        <p class="mt-2 text-3xl font-bold text-lime-300">#<%= latest.contest_number %></p>
+        <p class="mt-1 text-xs text-slate-500"><%= l(latest.draw_date) %></p>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Dezenas já sorteadas</p>
+        <p class="mt-2 text-3xl font-bold text-white"><%= result.distinct_numbers_drawn %> <span class="text-base font-normal text-slate-500">de 60</span></p>
+        <p class="mt-1 text-xs text-slate-500"><%= result.total_editions * 6 %> dezenas sorteadas no total</p>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Nunca saíram na Virada</p>
+        <p class="mt-2 text-3xl font-bold text-white"><%= result.never_drawn_numbers.size %></p>
+        <p class="mt-1 text-xs text-slate-500">
+          <%= result.never_drawn_numbers.empty? ? "todas já saíram" : result.never_drawn_numbers.map { |n| format("%02d", n) }.join(" ") %>
+        </p>
+      </div>
+    </section>
+
+    <%# Dezenas de cada edição %>
+    <section class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+      <div class="border-b border-slate-800 px-6 py-4">
+        <h2 class="text-lg font-semibold text-white">Dezenas sorteadas em cada edição</h2>
+        <p class="mt-1 text-xs text-slate-500">Da edição mais recente para a mais antiga.</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th class="px-6 py-3">Virada</th>
+              <th class="px-4 py-3">Concurso</th>
+              <th class="px-4 py-3">Data do sorteio</th>
+              <th class="px-4 py-3">Dezenas</th>
+              <th class="px-4 py-3 text-right">Ganhadores Sena</th>
+              <th class="px-6 py-3 text-right">Prêmio por ganhador</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-slate-300">
+            <% result.editions.reverse_each do |edition| %>
+              <tr>
+                <td class="px-6 py-3 font-semibold text-white"><%= edition.year %></td>
+                <td class="px-4 py-3 tabular-nums">#<%= edition.contest_number %></td>
+                <td class="px-4 py-3 whitespace-nowrap"><%= l(edition.draw_date) %></td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-1">
+                    <% edition.numbers.each do |number| %>
+                      <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-sm font-bold text-lime-300">
+                        <%= format("%02d", number) %>
+                      </span>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right tabular-nums"><%= edition.winners_sena || "—" %></td>
+                <td class="px-6 py-3 text-right tabular-nums whitespace-nowrap">
+                  <%= edition.prize_sena && edition.winners_sena.to_i.positive? ? number_to_currency(edition.prize_sena) : "—" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <%# Histórico de cada dezena nas Viradas %>
+    <section class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-6 py-4">
+        <div>
+          <h2 class="text-lg font-semibold text-white">Histórico de cada dezena nas Viradas</h2>
+          <p class="mt-1 text-xs text-slate-500">
+            Considera apenas as <%= result.total_editions %> edições da Mega da Virada (concursos até #<%= latest.contest_number %>).
+          </p>
+        </div>
+
+        <div class="flex gap-1 text-xs" role="group" aria-label="Ordenação">
+          <% [ [ "number", "Dezena" ], [ "times", "Mais sorteadas" ], [ "delay", "Maior tempo sem sair" ] ].each do |key, label| %>
+            <%= link_to label, virada_analyses_path(sort: key == "number" ? nil : key),
+                  aria: { current: @sort == key ? "true" : nil },
+                  class: [
+                    "rounded-lg px-3 py-2 font-medium transition",
+                    @sort == key ? "bg-lime-400/10 text-lime-300 ring-1 ring-inset ring-lime-400/20" : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  ].join(" ") %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th class="px-6 py-3">Dezena</th>
+              <th class="px-4 py-3 text-right">Vezes nas Viradas</th>
+              <th class="px-4 py-3 text-right">% das edições</th>
+              <th class="px-4 py-3">Última Virada em que saiu</th>
+              <th class="px-6 py-3 text-right">Edições sem sair</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-slate-300">
+            <% @stats.each do |stat| %>
+              <tr>
+                <td class="px-6 py-2.5">
+                  <span class="inline-flex h-9 w-9 items-center justify-center rounded-full font-bold <%= stat.drawn_in_latest? ? 'bg-lime-400 text-slate-950' : 'bg-slate-800 text-lime-300' %>">
+                    <%= format("%02d", stat.number) %>
+                  </span>
+                </td>
+                <td class="px-4 py-2.5 text-right text-base font-semibold tabular-nums text-white"><%= stat.times_drawn %></td>
+                <td class="px-4 py-2.5 text-right tabular-nums"><%= number_with_precision(stat.percent_of_editions, precision: 1) %>%</td>
+                <td class="px-4 py-2.5">
+                  <% if stat.never_drawn? %>
+                    <span class="text-slate-500">nunca saiu</span>
+                  <% else %>
+                    Virada <%= result.editions[stat.last_edition - 1].year %>
+                    <span class="text-slate-500">· #<%= stat.last_contest %> · <%= l(stat.last_date) %></span>
+                  <% end %>
+                </td>
+                <td class="px-6 py-2.5 text-right tabular-nums">
+                  <% if stat.drawn_in_latest? %>
+                    <span class="font-semibold text-lime-300">saiu na última edição</span>
+                  <% else %>
+                    <span class="text-base font-semibold text-white"><%= stat.editions_since_last %></span>
+                    <span class="text-slate-500"><%= stat.editions_since_last == 1 ? "edição" : "edições" %><%= " (nunca saiu)" if stat.never_drawn? %></span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="max-w-3xl space-y-2 text-xs text-slate-500">
+      <p>
+        <strong class="text-slate-400">Como as edições são identificadas:</strong> a planilha da Caixa não tem uma coluna para a Virada.
+        São consideradas as edições sorteadas em 31/12 (ou 01/01, quando a planilha registra a Virada no dia seguinte) a partir de
+        31/12/2009 (concurso 1140). “Edições sem sair” conta quantas Viradas aconteceram desde a última em que a dezena foi sorteada;
+        0 significa que saiu na edição mais recente.
+      </p>
+      <p>
+        Os sorteios são independentes: com apenas <%= result.total_editions %> edições, as diferenças entre as dezenas refletem em grande parte o acaso
+        e não indicam tendência para as próximas Viradas.
+      </p>
+    </div>
+  <% end %>
+</div>
