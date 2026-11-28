@@ -1,0 +1,135 @@
+<% content_for :title, "Sorteio aleatório · MegaStats" %>
+
+<div class="space-y-6">
+  <header>
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Ferramentas</p>
+    <h1 class="mt-2 text-3xl font-bold text-white">Sorteio aleatório</h1>
+    <p class="mt-2 max-w-3xl text-sm text-slate-400">
+      Sorteia seis dezenas distintas entre 01 e 60 e mostra, para cada uma, quantas vezes já saiu e há quantos
+      concursos não aparece, além de verificar se a combinação completa já foi sorteada.
+    </p>
+  </header>
+
+  <div>
+    <% button_label = @analysis ? "Sortear novamente" : "Sortear 6 dezenas" %>
+    <%= button_to button_label, random_draw_path, method: :post,
+          class: "rounded-xl bg-lime-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-lime-300" %>
+  </div>
+
+  <% if @analysis && @analysis.total_draws.zero? %>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-sm text-slate-300">
+      Ainda não há concursos cadastrados para comparar. Importe o histórico da Mega-Sena primeiro.
+    </div>
+  <% elsif @analysis %>
+    <% analysis = @analysis %>
+
+    <%# Dezenas sorteadas e situação da combinação %>
+    <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500">Dezenas sorteadas</h2>
+
+      <div class="mt-4 flex flex-wrap gap-3">
+        <% analysis.numbers.each do |number| %>
+          <span class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-lime-400 text-xl font-bold text-slate-950">
+            <%= format("%02d", number) %>
+          </span>
+        <% end %>
+      </div>
+
+      <% if analysis.already_drawn? %>
+        <div class="mt-6 rounded-xl border-l-4 border-amber-500 bg-amber-950/40 px-5 py-4 text-sm text-amber-200" role="status">
+          <p class="font-semibold">Esta combinação das seis dezenas já foi sorteada.</p>
+          <ul class="mt-2 space-y-1">
+            <% analysis.combination_matches.each do |match| %>
+              <li>Concurso <strong>#<%= match.contest_number %></strong> — <%= l(match.draw_date) %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% else %>
+        <div class="mt-6 rounded-xl border-l-4 border-lime-500 bg-lime-950/40 px-5 py-4 text-sm text-lime-200" role="status">
+          <p class="font-semibold">
+            Esta combinação ainda não foi sorteada em nenhum dos <%= number_with_delimiter(analysis.total_draws) %> concursos
+            (até o concurso #<%= analysis.latest_contest %>).
+          </p>
+          <% if analysis.best_hits.positive? %>
+            <p class="mt-2 text-lime-300/80">
+              Maior acerto histórico: <strong><%= analysis.best_hits %> dezena<%= "s" unless analysis.best_hits == 1 %></strong>
+              <% shown = analysis.best_matches.last(3) %>
+              —
+              <% shown.each_with_index do |match, index| %>
+                concurso #<%= match.contest_number %> (<%= match.hits.map { |n| format("%02d", n) }.join(" ") %>)<%= index < shown.size - 1 ? "," : "" %>
+              <% end %>
+              <% if analysis.best_matches.size > shown.size %>
+                e mais <%= analysis.best_matches.size - shown.size %> concurso(s) anterior(es)
+              <% end %>.
+            </p>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+
+    <%# Histórico de cada dezena %>
+    <section class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+      <div class="border-b border-slate-800 px-6 py-4">
+        <h2 class="text-lg font-semibold text-white">Histórico de cada dezena</h2>
+        <p class="mt-1 text-xs text-slate-500">
+          Dados até o concurso #<%= analysis.latest_contest %> (<%= l(analysis.latest_date) %>) —
+          <%= number_with_delimiter(analysis.total_draws) %> concursos.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th class="px-6 py-3">Dezena</th>
+              <th class="px-4 py-3 text-right">Vezes sorteada</th>
+              <th class="px-4 py-3 text-right">% dos concursos</th>
+              <th class="px-4 py-3">Última aparição</th>
+              <th class="px-4 py-3 text-right">Concursos sem sair</th>
+              <th class="px-6 py-3 text-right">Média entre aparições</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-slate-300">
+            <% analysis.number_stats.each do |stat| %>
+              <tr>
+                <td class="px-6 py-3">
+                  <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 font-bold text-lime-300">
+                    <%= format("%02d", stat.number) %>
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-right text-base font-semibold tabular-nums text-white"><%= number_with_delimiter(stat.times_drawn) %></td>
+                <td class="px-4 py-3 text-right tabular-nums"><%= number_with_precision(stat.percent_of_draws, precision: 1) %>%</td>
+                <td class="px-4 py-3">
+                  <% if stat.never_drawn? %>
+                    <span class="text-slate-500">nunca saiu</span>
+                  <% else %>
+                    #<%= stat.last_contest %> <span class="text-slate-500">· <%= l(stat.last_date) %></span>
+                  <% end %>
+                </td>
+                <td class="px-4 py-3 text-right tabular-nums">
+                  <% if stat.never_drawn? %>
+                    —
+                  <% elsif stat.drawn_in_latest? %>
+                    <span class="font-semibold text-lime-300">saiu no último concurso</span>
+                  <% else %>
+                    <span class="text-base font-semibold text-white"><%= number_with_delimiter(stat.draws_since_last) %></span>
+                    <span class="text-slate-500">concurso<%= "s" unless stat.draws_since_last == 1 %></span>
+                  <% end %>
+                </td>
+                <td class="px-6 py-3 text-right tabular-nums">
+                  <%= stat.average_gap ? number_with_precision(stat.average_gap, precision: 1) : "—" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="max-w-3xl text-xs text-slate-500">
+      Todas as combinações têm a mesma chance de sair (1 em 50.063.860), inclusive as que já saíram. Como os sorteios são
+      independentes, há quanto tempo uma dezena não aparece não altera a probabilidade do próximo concurso: os números acima
+      descrevem o passado.
+    </p>
+  <% end %>
+</div>

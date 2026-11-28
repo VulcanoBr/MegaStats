@@ -21,6 +21,8 @@ Rails.application.routes.draw do
 
   get "winner_range_analyses", to: "winner_range_analyses#index", as: :winner_range_analyses
 
+  resource :random_draw, only: %i[show create]
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
